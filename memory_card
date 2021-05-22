@@ -1,0 +1,146 @@
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout, QHBoxLayout, QLabel, QGroupBox, QPushButton, QRadioButton, QButtonGroup
+from random import shuffle, randint
+
+class Voprosy():
+    def __init__(self, vop, right_otvet, wrong1, wrong2, wrong3):
+        self.vop = vop
+        self.right_otvet = right_otvet
+        self.wrong1 = wrong1
+        self.wrong2 = wrong2
+        self.wrong3 = wrong3
+
+spisok_voprosov = []
+v0 = Voprosy('Государственный язык Бразилии?', 'Португальский', 'Английский', 'Испанский', 'Бразильский')
+v1 = Voprosy('Какого цвета нет в флаге Германии?','Зелёного','Красного','Жёлтого','Чёрного')
+v2 = Voprosy('Какого языка не существует?', 'Арпонецкого', 'Русского', 'Хантыйского', 'Жестов')
+v3 = Voprosy('На государственном флаге Японии изображено...', 'Восходящее солнце на белом фоне', 'Красная точка на белом фоне', '4 маленьких и 1 большая жёлтая звезды на красном фоне', 'Четыре триграммы по углам и сине-красный круг в центре')
+v4 = Voprosy('В чем была особенность мозга Альберта Эйнштейна?', 'Он был меньше обычного', 'Он был больше обычного', 'У него не было одного полушария', 'У него не было одного участка')
+v5 = Voprosy('Что с Стивеном Хокингом сделала болезнь?', 'Его парализовало', 'Он ослеп', 'Он оглох', 'Он не мог спать')
+spisok_voprosov.append(v0)
+spisok_voprosov.append(v1)
+spisok_voprosov.append(v2)
+spisok_voprosov.append(v3)
+spisok_voprosov.append(v4)
+spisok_voprosov.append(v5)
+
+app = QApplication([])
+okno = QWidget()
+okno.setWindowTitle('Memory Card')
+okno.resize(650, 450)
+
+gvl = QVBoxLayout()
+vopros = QLabel('')
+hl0 = QHBoxLayout()
+hl0.addWidget(vopros ,alignment = Qt.AlignCenter)
+gvl.addLayout(hl0)
+
+vop = QLabel('Вопрос')
+hl11 = QHBoxLayout()
+hl11.addWidget(vop, alignment = Qt.AlignCenter)
+gvl.addLayout(hl11)
+
+group = QGroupBox('Варианты ответов')
+hl1 = QHBoxLayout()
+hl1.addWidget(group ,alignment = Qt.AlignCenter)
+gvl.addLayout(hl1)
+
+otvetit = QPushButton('Ответить')
+hl2 = QHBoxLayout()
+hl2.addWidget(otvetit ,alignment = Qt.AlignCenter)
+gvl.addLayout(hl2)
+
+variant0 = QRadioButton('Энцы')
+variant1 = QRadioButton('Смурфы')
+variant2 = QRadioButton('Чулымцы')
+variant3 = QRadioButton('Алеуты')
+groupp = QButtonGroup()
+groupp.addButton(variant0)
+groupp.addButton(variant1)
+groupp.addButton(variant2)
+groupp.addButton(variant3)
+hl3 = QHBoxLayout()
+vl0 = QVBoxLayout()
+vl1 = QVBoxLayout()
+vl0.addWidget(variant0)
+vl0.addWidget(variant1)
+vl1.addWidget(variant2)
+vl1.addWidget(variant3)
+hl3.addLayout(vl0)
+hl3.addLayout(vl1)
+group.setLayout(hl3)
+
+#2 часть - форма ответа
+group2 = QGroupBox('Результат теста')
+tf = QLabel('Правильно/Неправильно')
+otvet = QLabel('Правильный ответ')
+vl2 = QVBoxLayout()
+vl2.addWidget(tf)
+vl2.addWidget(otvet ,alignment = Qt.AlignCenter)
+group2.setLayout(vl2)
+hl1.addWidget(group2)
+group2.hide()
+
+def show_result():
+    group.hide()
+    group2.show()
+    otvetit.setText('Следующий вопрос')
+
+def show_question():
+    group2.hide()
+    group.show()
+    otvetit.setText('Ответить')
+    groupp.setExclusive(False)
+    variant0.setChecked(False)
+    variant1.setChecked(False)
+    variant2.setChecked(False)
+    variant3.setChecked(False)
+    groupp.setExclusive(True)
+
+otvety = [variant0, variant1, variant2, variant3]
+
+def ask(v: Voprosy):
+    shuffle(otvety)
+    otvety[0].setText(v.right_otvet)
+    otvety[1].setText(v.wrong1)
+    otvety[2].setText(v.wrong2)
+    otvety[3].setText(v.wrong3)
+    vop.setText(v.vop)
+    otvet.setText(v.right_otvet)
+    show_question()
+
+def check_answer():
+    if otvety[0].isChecked():
+        tf.setText('Правильно!')
+        show_result()
+        okno.ochki += 1
+        okno.kolvo_voprosov += 1
+    elif otvety[1].isChecked() or otvety[2].isChecked() or otvety[3].isChecked():
+        okno.kolvo_voprosov += 1
+        tf.setText('Неправильно!')
+
+        show_result()
+    print('Всего вопросов:', okno.kolvo_voprosov, '# Правильных ответов:', okno.ochki, '# Рейтинг', okno.ochki/okno.kolvo_voprosov*100,'%')
+
+def sled_vopros():
+    schetchik = randint(0, len(spisok_voprosov) - 1)
+    v = spisok_voprosov[schetchik]
+    ask(v)
+
+def click_OK():
+    if otvetit.text() == 'Ответить':
+        check_answer()
+    else:
+        sled_vopros()
+
+
+okno.setLayout(gvl)
+
+okno.ochki = 0
+okno.kolvo_voprosov = 0
+
+otvetit.clicked.connect(click_OK)
+sled_vopros()
+
+okno.show()
+app.exec_()
